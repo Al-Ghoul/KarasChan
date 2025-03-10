@@ -5,6 +5,9 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
+  TOKEN_ISSUER: z.string(),
+  JWT_SECRET: z.string(),
+  JWT_KEY: z.string(),
   PORT: z.string().transform(Number),
 });
 

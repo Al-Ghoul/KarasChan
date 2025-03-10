@@ -1,8 +1,13 @@
 import { z } from "zod";
 
-export const userInputSchema = z.object({
+export const loginInputSchema = z.object({
   email: z.string().email(),
   password: z.string(),
+});
+
+export type LoginInputSchema = z.infer<typeof loginInputSchema>;
+
+export const userInputSchema = loginInputSchema.extend({
   fullName: z.string(),
   address: z.string().optional(),
 });
