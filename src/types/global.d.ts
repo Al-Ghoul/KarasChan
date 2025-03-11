@@ -1,8 +1,13 @@
-import {user} from "../db/schemas/user"
+import { user } from "../db/schemas/user";
 
-
-export {}
+export {};
 
 declare global {
   type User = typeof user.$inferInsert;
+
+  namespace Express {
+    interface Request {
+      user: { userId: string };
+    }
+  }
 }
