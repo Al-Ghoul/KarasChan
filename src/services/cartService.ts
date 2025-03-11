@@ -46,7 +46,7 @@ export async function getCartItems(
       .innerJoin(cartItem, eq(cartItem.cartId, cart.id))
       .where(eq(cart.id, input.cartId))
       .orderBy(asc(cartItem.createdAt))
-      .limit(input.limit)
+      .limit(input.limit + 1)
       .offset(input.offset);
   } catch (error) {
     throw new Error("Database error");

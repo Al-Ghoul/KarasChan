@@ -117,7 +117,7 @@ export async function getCartItems(req: Request, res: Response) {
         per_page: limit,
         last_page: Math.ceil(Number(totalCartItems[0].count) / limit),
       },
-      data: cartItems.shift(),
+      data: cartItems.length > limit ? cartItems.shift() : cartItems,
     });
   } catch (error) {
     res.status(500).json({
@@ -475,6 +475,12 @@ export async function getOrderItems(req: Request, res: Response) {
       return;
     }
 
+    const totalOrderItems = await cartService.getTotalOrderItemsCountByOrderId(
+      {
+        userId: req.user.userId,
+        orderId: input.data.id,
+      }
+    );
     res.status(200).json({
       status: "success",
       statusCode: 200,
