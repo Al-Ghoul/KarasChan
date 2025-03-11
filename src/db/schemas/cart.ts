@@ -1,5 +1,4 @@
 import {
-  numeric,
   pgEnum,
   pgTable,
   serial,
@@ -30,6 +29,6 @@ export const cartItem = pgTable("cart_item", {
   id: serial().primaryKey(),
   cartId: integer().references(() => cart.id),
   productId: integer().references(() => product.id),
-  quantity: numeric().notNull(),
+  quantity: integer().notNull(),
   ...timestamps,
 });

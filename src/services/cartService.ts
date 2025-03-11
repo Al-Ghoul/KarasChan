@@ -65,3 +65,18 @@ export async function getTotalCartItemsCount(cartId: number) {
   }
   return totalCartItems;
 }
+
+export async function addItemToCart(input: {
+  cartId: number;
+  productId: number;
+  quantity: number;
+}) {
+  let createdCartItem = undefined;
+  try {
+    createdCartItem = await db.insert(cartItem).values(input).returning();
+  } catch (error) {
+    throw new Error("Database error");
+  }
+  if (!createdCartItem.length) throw new Error("Cart item not created");
+  return createdCartItem[0];
+}

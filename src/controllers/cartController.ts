@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import * as cartService from "../services/cartService";
-import { paginationInputSchema } from "../types/inputSchemas";
+import {
+  type CartItemInputSchema,
+  paginationInputSchema,
+} from "../types/inputSchemas";
+import * as productService from "../services/productService";
 
 export async function createCartForCurrentUser(req: Request, res: Response) {
   const currentUser = req.user;
@@ -111,6 +115,61 @@ export async function getCartItems(req: Request, res: Response) {
         last_page: Math.ceil(Number(totalCartItems[0].count) / limit),
       },
       data: cartItems.shift(),
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error, please try again later",
+      status: "error",
+      statusCode: 500,
+      details: "Something went wrong",
+    });
+  }
+}
+
+export async function addItemToCart(req: Request, res: Response) {
+  const { productId, quantity } = req.body as CartItemInputSchema;
+  try {
+    const getProduct = await productService.getProductById(productId);
+    const userCart = await cartService.getCartByUserId(req.user.userId);
+    if (!userCart) {
+      res.status(404).json({
+        message: "Cart not found",
+        status: "error",
+        statusCode: 404,
+        details: "You don't have a cart",
+      });
+      return;
+    }
+    if (!getProduct) {
+      res.status(404).json({
+        message: "Product not found",
+        status: "error",
+        statusCode: 404,
+        details: "The product you are trying to add to the cart does not exist",
+      });
+      return;
+    }
+
+    if (getProduct.quantity < quantity) {
+      res.status(400).json({
+        message: "Quantity not available",
+        status: "error",
+        statusCode: 400,
+        details: "The product you are trying to add to the cart is out of stock",
+      });
+      return;
+    }
+    
+    const createdCartItem = await cartService.addItemToCart({
+      cartId: userCart.id,
+      productId,
+      quantity,
+    });
+    res.status(201).json({
+      status: "success",
+      statusCode: 201,
+      message: "Cart item added successfully",
+      data: createdCartItem,
     });
   } catch (error) {
     res.status(500).json({

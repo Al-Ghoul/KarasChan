@@ -28,3 +28,10 @@ export const paginationInputSchema = z
   .strict();
 
 export type PaginationInputSchema = z.infer<typeof paginationInputSchema>;
+
+export const cartItemInputSchema = z.object({
+  productId: z.number(),
+  quantity: z.number(),
+});
+
+export type CartItemInputSchema = z.infer<typeof cartItemInputSchema>;
