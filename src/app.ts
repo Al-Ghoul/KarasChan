@@ -3,6 +3,7 @@ import authRoutes from "./routes/authRoutes";
 import { authMiddleware } from "./middlewares/authMiddleware";
 import cartRoutes from "./routes/cartRoutes";
 import productRoutes from "./routes/productRoutes";
+import orderRoutes from "./routes/orderRoutes";
 
 export const app = express();
 
@@ -14,3 +15,4 @@ app.use("/api/products", productRoutes);
 
 app.use(authMiddleware);
 app.use("/api/carts", cartRoutes);
+app.use("/api/orders", orderRoutes);

@@ -2,6 +2,7 @@ import { db } from "../db";
 import { cart, cartItem } from "../db/schemas/cart";
 import { eq, and, count, asc } from "drizzle-orm";
 import { PaginationInputSchema } from "../types/inputSchemas";
+import { order, orderItem } from "../db/schemas/order";
 import { product } from "../db/schemas/product";
 
 export async function getCartByUserId(userId: string) {
@@ -121,4 +122,89 @@ export async function updateCartItemQuantity({
     throw new Error("Database error");
   }
   return updatedCartItem[0];
+}
+
+export async function getCartItemsByUserId(userId: string) {
+  let cartItems = undefined;
+  try {
+    cartItems = await db
+      .select({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: cartItem.quantity,
+        cartId: cartItem.cartId,
+      })
+      .from(cart)
+      .innerJoin(cartItem, eq(cartItem.cartId, cart.id))
+      .innerJoin(product, eq(product.id, cartItem.productId))
+      .where(and(eq(cart.userId, userId), eq(cart.status, "active")));
+  } catch (error) {
+    throw new Error("Database error");
+  }
+  return cartItems;
+}
+
+export async function createOrder({
+  cartId,
+  userId,
+  totalAmount,
+}: {
+  cartId: number;
+  userId: string;
+  totalAmount: string;
+}) {
+  let createdOrder = undefined;
+  try {
+    createdOrder = await db
+      .insert(order)
+      .values({
+        cartId,
+        userId,
+        fulfillmentStatus: "pending",
+        totalAmount,
+      })
+      .returning();
+  } catch (error) {
+    throw new Error("Database error");
+  }
+  if (!createdOrder.length) throw new Error("Order not created");
+  return createdOrder[0];
+}
+
+export async function createOrderItems(
+  orderItems: Omit<OrderItem, "id" | "createdAt" | "updatedAt">[],
+) {
+  let createdOrderItems = undefined;
+  try {
+    createdOrderItems = await db
+      .insert(orderItem)
+      .values(orderItems)
+      .returning();
+  } catch (error) {
+    throw new Error("Database error");
+  }
+  if (!createdOrderItems.length) throw new Error("Order items not created");
+  return createdOrderItems[0];
+}
+
+export async function updateCartStatus({
+  cartId,
+  status,
+}: {
+  cartId: number;
+  status: "active" | "archived";
+}) {
+  let updatedCart = undefined;
+  try {
+    updatedCart = await db
+      .update(cart)
+      .set({ status })
+      .where(eq(cart.id, cartId))
+      .returning();
+  } catch (error) {
+    throw new Error("Database error");
+  }
+  if (!updatedCart.length) throw new Error("Cart not updated");
+  return updatedCart[0];
 }

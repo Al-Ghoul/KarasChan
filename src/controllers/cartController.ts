@@ -319,3 +319,57 @@ export async function updateCartItemQuantity(req: Request, res: Response) {
     });
   }
 }
+
+export async function createOrder(req: Request, res: Response) {
+  try {
+    const cartItems = await cartService.getCartItemsByUserId(req.user.userId);
+
+    if (!cartItems || cartItems.length === 0) {
+      res.status(404).json({
+        message: "Cart not found",
+        status: "error",
+        statusCode: 404,
+        details: "You don't have an active cart or its empty",
+      });
+      return;
+    }
+
+    const totalAmount = cartItems.reduce((acc, item) => {
+      return acc + parseFloat(item.price) * item.quantity;
+    }, 0);
+
+    const createdOrder = await cartService.createOrder({
+      cartId: cartItems[0].cartId!,
+      userId: req.user.userId,
+      totalAmount: totalAmount.toString(),
+    });
+
+    await cartService.createOrderItems(
+      cartItems.map((item) => ({
+        orderId: createdOrder.id,
+        productId: item.id,
+        quantity: item.quantity,
+        priceAtPurchase: item.price,
+      })),
+    );
+
+    await cartService.updateCartStatus({
+      cartId: cartItems[0].cartId!,
+      status: "checked_out",
+    });
+
+    res.status(201).json({
+      status: "success",
+      statusCode: 201,
+      message: "Order created successfully",
+      data: createdOrder,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error, please try again later",
+      status: "error",
+      statusCode: 500,
+      details: "Something went wrong",
+    });
+  }
+}
