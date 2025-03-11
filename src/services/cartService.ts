@@ -273,9 +273,41 @@ export async function getOrderItemsByOrderId(
       .from(order)
       .innerJoin(orderItem, eq(orderItem.orderId, order.id))
       .innerJoin(product, eq(product.id, orderItem.productId))
+      .where(and(eq(order.id, input.orderId), eq(order.userId, input.userId)))
+      .limit(input.limit + 1)
+      .offset(input.offset);
+  } catch (error) {
+    throw new Error("Database error");
+  }
+  return orderItems;
+}
+
+export async function getTotalOrderItemsCountByOrderId(input: {
+  userId: string;
+  orderId: number;
+}) {
+  let orderItems = undefined;
+  try {
+    orderItems = await db
+      .select({
+        count: count(),
+      })
+      .from(order)
+      .innerJoin(orderItem, eq(orderItem.orderId, order.id))
+      .innerJoin(product, eq(product.id, orderItem.productId))
       .where(and(eq(order.id, input.orderId), eq(order.userId, input.userId)));
   } catch (error) {
     throw new Error("Database error");
   }
   return orderItems;
+}
+
+export async function getOrderById(id: number) {
+  let queriedOrder = undefined;
+  try {
+    queriedOrder = await db.select().from(order).where(eq(order.id, id));
+  } catch (error) {
+    throw new Error("Database error");
+  }
+  return queriedOrder[0];
 }

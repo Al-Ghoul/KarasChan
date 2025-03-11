@@ -459,33 +459,45 @@ export async function getOrderItems(req: Request, res: Response) {
   const limit = paginationInput.data.limit ?? 10;
   const offset = paginationInput.data.offset ?? 0;
   try {
+    const order = await cartService.getOrderById(input.data.id);
+
+    if (!order) {
+      res.status(404).json({
+        message: "Order not found",
+        status: "error",
+        statusCode: 404,
+        details: "The order you requested was not found",
+      });
+      return;
+    }
+
     const orderItems = await cartService.getOrderItemsByOrderId({
       userId: req.user.userId,
       orderId: input.data.id,
       limit,
       offset,
     });
-    if (!orderItems || orderItems.length === 0) {
-      res.status(404).json({
-        message: "Order items not found",
-        status: "error",
-        statusCode: 404,
-        details: "You don't have any order items or this order doesn't belong to you",
-      });
-      return;
-    }
 
-    const totalOrderItems = await cartService.getTotalOrderItemsCountByOrderId(
-      {
-        userId: req.user.userId,
-        orderId: input.data.id,
-      }
-    );
+    const totalOrderItems = await cartService.getTotalOrderItemsCountByOrderId({
+      userId: req.user.userId,
+      orderId: input.data.id,
+    });
+
     res.status(200).json({
       status: "success",
       statusCode: 200,
       message: "Order items retrieved successfully",
-      data: orderItems,
+      meta: {
+        has_next_page: orderItems.length > limit,
+        has_previous_page: offset > 0,
+        total: totalOrderItems[0].count,
+        count:
+          orderItems.length > limit ? orderItems.length - 1 : orderItems.length,
+        current_page: Math.floor(offset / limit) + 1,
+        per_page: limit,
+        last_page: Math.ceil(Number(totalOrderItems[0].count) / limit),
+      },
+      data: orderItems.length > limit ? orderItems.shift() : orderItems,
     });
   } catch (error) {
     res.status(500).json({
