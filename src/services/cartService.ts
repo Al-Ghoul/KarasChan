@@ -254,3 +254,28 @@ export async function getTotalOrdersCountByUserId(
   }
   return totalOrdersCount;
 }
+
+export async function getOrderItemsByOrderId(
+  input: {
+    userId: string;
+    orderId: number;
+  } & Required<PaginationInputSchema>,
+) {
+  let orderItems = undefined;
+  try {
+    orderItems = await db
+      .select({
+        id: orderItem.id,
+        name: product.name,
+        price: orderItem.priceAtPurchase,
+        quantity: orderItem.quantity,
+      })
+      .from(order)
+      .innerJoin(orderItem, eq(orderItem.orderId, order.id))
+      .innerJoin(product, eq(product.id, orderItem.productId))
+      .where(and(eq(order.id, input.orderId), eq(order.userId, input.userId)));
+  } catch (error) {
+    throw new Error("Database error");
+  }
+  return orderItems;
+}

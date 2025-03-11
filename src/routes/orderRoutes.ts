@@ -7,4 +7,6 @@ router.post("/", cartController.createOrder);
 
 router.get("/", cartController.getCurrentUserOrders);
 
+router.get("/:id/items", cartController.getOrderItems);
+
 export default router;

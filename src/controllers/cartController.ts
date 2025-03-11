@@ -440,3 +440,53 @@ export async function getCurrentUserOrders(req: Request, res: Response) {
     });
   }
 }
+
+export async function getOrderItems(req: Request, res: Response) {
+  const input = itemIdSchema.safeParse(req.params);
+  const paginationInput = paginationInputSchema.safeParse(req.query);
+  if (!input.success || !paginationInput.success) {
+    const errors = input.error?.errors || paginationInput.error?.errors;
+    res.status(400).json({
+      status: "error",
+      statusCode: 400,
+      message: "Validation failed",
+      errors: errors?.map((error) => {
+        return { path: error.path[0], message: error.message };
+      }),
+    });
+    return;
+  }
+  const limit = paginationInput.data.limit ?? 10;
+  const offset = paginationInput.data.offset ?? 0;
+  try {
+    const orderItems = await cartService.getOrderItemsByOrderId({
+      userId: req.user.userId,
+      orderId: input.data.id,
+      limit,
+      offset,
+    });
+    if (!orderItems || orderItems.length === 0) {
+      res.status(404).json({
+        message: "Order items not found",
+        status: "error",
+        statusCode: 404,
+        details: "You don't have any order items or this order doesn't belong to you",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      status: "success",
+      statusCode: 200,
+      message: "Order items retrieved successfully",
+      data: orderItems,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error, please try again later",
+      status: "error",
+      statusCode: 500,
+      details: "Something went wrong",
+    });
+  }
+}
