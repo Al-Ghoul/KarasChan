@@ -30,3 +30,32 @@ export async function createCartForCurrentUser(req: Request, res: Response) {
     });
   }
 }
+
+export async function getCurrentUserCart(req: Request, res: Response) {
+  const currentUser = req.user;
+  try {
+    const userCart = await cartService.getCartByUserId(currentUser.userId);
+    if (!userCart) {
+      res.status(404).json({
+        message: "Cart not found",
+        status: "error",
+        statusCode: 404,
+        details: "You don't have a cart",
+      });
+      return;
+    }
+    res.status(200).json({
+      status: "success",
+      statusCode: 200,
+      message: "Cart retrieved successfully",
+      data: userCart,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error, please try again later",
+      status: "error",
+      statusCode: 500,
+      details: "Something went wrong",
+    });
+  }
+}

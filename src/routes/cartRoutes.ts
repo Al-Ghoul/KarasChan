@@ -5,4 +5,6 @@ const router = Router();
 
 router.post("/", cartController.createCartForCurrentUser);
 
+router.get("/", cartController.getCurrentUserCart);
+
 export default router;
