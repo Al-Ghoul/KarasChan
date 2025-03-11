@@ -7,4 +7,6 @@ router.post("/", cartController.createCartForCurrentUser);
 
 router.get("/", cartController.getCurrentUserCart);
 
+router.get("/items", cartController.getCartItems);
+
 export default router;
