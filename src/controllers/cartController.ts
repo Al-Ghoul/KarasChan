@@ -26,7 +26,7 @@ export async function createCartForCurrentUser(req: Request, res: Response) {
       status: "success",
       statusCode: 201,
       message: "Cart created successfully",
-      data: { cart: createdCart },
+      data: createdCart,
     });
   } catch (error) {
     res.status(500).json({
@@ -157,11 +157,12 @@ export async function addItemToCart(req: Request, res: Response) {
         message: "Quantity not available",
         status: "error",
         statusCode: 400,
-        details: "The product you are trying to add to the cart is out of stock",
+        details:
+          "The product you are trying to add to the cart is out of stock",
       });
       return;
     }
-    
+
     const createdCartItem = await cartService.addItemToCart({
       cartId: userCart.id,
       productId,
