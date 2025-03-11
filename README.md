@@ -4,7 +4,9 @@ Karschan API's a RESTful API for an E-Commerce platform.
 
 ## Routes
 
-| URI              |   Description   | Method |
-| :--------------- | :-------------: | :----- |
-| /api/auth/signup | Sign up a user. | POST   |
-| /api/auth/signin | Sign in a user. | POST   |
+| URI              |                 Description                 | Method |
+| :--------------- | :-----------------------------------------: | :----- |
+| /api/auth/signup |               Sign up a user.               | POST   |
+| /api/auth/signin |               Sign in a user.               | POST   |
+| /api/carts/      | Create a cart for currently signed in user. | POST   |
+| /api/carts/      |   Get cart for currently signed in user.    | GET    |
