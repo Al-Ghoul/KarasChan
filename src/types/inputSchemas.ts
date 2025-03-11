@@ -36,9 +36,19 @@ export const cartItemInputSchema = z.object({
 
 export type CartItemInputSchema = z.infer<typeof cartItemInputSchema>;
 
-export const itemIdSchema = z.object({
-  id: z
-    .string()
-    .optional()
-    .transform((value) => (value ? parseInt(value) : 0)),
-});
+export const itemIdSchema = z
+  .object({
+    id: z
+      .string()
+      .optional()
+      .transform((value) => (value ? parseInt(value) : 0)),
+  })
+  .strict();
+
+export const itemQuantityInputSchema = z
+  .object({
+    quantity: z.number().refine((value) => value > 0, {
+      message: "Quantity must be greater than 0",
+    }),
+  })
+  .strict();

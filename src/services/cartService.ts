@@ -2,6 +2,7 @@ import { db } from "../db";
 import { cart, cartItem } from "../db/schemas/cart";
 import { eq, and, count, asc } from "drizzle-orm";
 import { PaginationInputSchema } from "../types/inputSchemas";
+import { product } from "../db/schemas/product";
 
 export async function getCartByUserId(userId: string) {
   let queriedCart = undefined;
@@ -98,4 +99,26 @@ export async function deleteCartItem({
     throw new Error("Database error");
   }
   return deletedCartItem[0];
+}
+
+export async function updateCartItemQuantity({
+  cartId,
+  itemId,
+  quantity,
+}: {
+  cartId: number;
+  itemId: number;
+  quantity: number;
+}) {
+  let updatedCartItem = undefined;
+  try {
+    updatedCartItem = await db
+      .update(cartItem)
+      .set({ quantity })
+      .where(and(eq(cartItem.id, itemId), eq(cartItem.cartId, cartId)))
+      .returning();
+  } catch (error) {
+    throw new Error("Database error");
+  }
+  return updatedCartItem[0];
 }

@@ -19,4 +19,6 @@ router.get("/items", cartController.getCartItems);
 
 router.delete("/items/:id", cartController.deleteCartItem);
 
+router.patch("/items/:id", cartController.updateCartItemQuantity);
+
 export default router;

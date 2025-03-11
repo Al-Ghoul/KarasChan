@@ -3,6 +3,7 @@ import * as cartService from "../services/cartService";
 import {
   type CartItemInputSchema,
   itemIdSchema,
+  itemQuantityInputSchema,
   paginationInputSchema,
 } from "../types/inputSchemas";
 import * as productService from "../services/productService";
@@ -225,6 +226,88 @@ export async function deleteCartItem(req: Request, res: Response) {
       statusCode: 200,
       message: "Cart item deleted successfully",
       data: deletedItem,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error, please try again later",
+      status: "error",
+      statusCode: 500,
+      details: "Something went wrong",
+    });
+  }
+}
+
+export async function updateCartItemQuantity(req: Request, res: Response) {
+  const idInput = itemIdSchema.safeParse(req.params);
+  const quantityInput = itemQuantityInputSchema.safeParse(req.body);
+  if (!idInput.success || !quantityInput.success) {
+    const errors = idInput.error?.errors || quantityInput.error?.errors;
+    res.status(400).json({
+      status: "error",
+      statusCode: 400,
+      message: "Validation failed",
+      errors: errors?.map((error) => {
+        return { path: error.path[0], message: error.message };
+      }),
+    });
+    return;
+  }
+  try {
+    const userCart = await cartService.getCartByUserId(req.user.userId);
+    if (!userCart) {
+      res.status(404).json({
+        message: "Cart not found",
+        status: "error",
+        statusCode: 404,
+        details: "You don't have a cart",
+      });
+      return;
+    }
+
+    const product = await productService.getProductByCartId({
+      cartId: userCart.id,
+      itemId: idInput.data.id,
+    });
+
+    if (!product) {
+      res.status(404).json({
+        message: "Cart item not found",
+        status: "error",
+        statusCode: 404,
+        details: "The cart item you are trying to update does not exist",
+      });
+      return;
+    }
+    if (product.quantity < quantityInput.data.quantity) {
+      res.status(400).json({
+        message: "You cannot add more items than the quantity in stock",
+        status: "error",
+        statusCode: 400,
+        details: "Try adding less items or reduce the quantity",
+      });
+      return;
+    }
+
+    const updatedItem = await cartService.updateCartItemQuantity({
+      cartId: userCart.id,
+      itemId: idInput.data.id,
+      quantity: quantityInput.data.quantity,
+    });
+    if (!updatedItem) {
+      res.status(404).json({
+        message: "Cart item not found",
+        status: "error",
+        statusCode: 404,
+        details: "The cart item you are trying to update does not exist",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      status: "success",
+      statusCode: 200,
+      message: "Cart item updated successfully",
+      data: updatedItem,
     });
   } catch (error) {
     res.status(500).json({
