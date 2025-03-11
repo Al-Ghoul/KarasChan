@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { fulfillmentStatus } from "../db/schemas/order";
 
 export const loginInputSchema = z.object({
   email: z.string().email(),
@@ -52,3 +53,7 @@ export const itemQuantityInputSchema = z
     }),
   })
   .strict();
+
+export const orderListInputSchema = paginationInputSchema.extend({
+  status: z.enum(fulfillmentStatus.enumValues).default("pending"),
+});

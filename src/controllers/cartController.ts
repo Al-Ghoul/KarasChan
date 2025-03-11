@@ -4,6 +4,7 @@ import {
   type CartItemInputSchema,
   itemIdSchema,
   itemQuantityInputSchema,
+  orderListInputSchema,
   paginationInputSchema,
 } from "../types/inputSchemas";
 import * as productService from "../services/productService";
@@ -363,6 +364,72 @@ export async function createOrder(req: Request, res: Response) {
       statusCode: 201,
       message: "Order created successfully",
       data: createdOrder,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error, please try again later",
+      status: "error",
+      statusCode: 500,
+      details: "Something went wrong",
+    });
+  }
+}
+
+export async function getCurrentUserOrders(req: Request, res: Response) {
+  const currentUser = req.user;
+  const input = orderListInputSchema.safeParse(req.query);
+
+  if (!input.success) {
+    const errors = input.error?.errors;
+    res.status(400).json({
+      status: "error",
+      statusCode: 400,
+      message: "Validation failed",
+      errors: errors?.map((error) => {
+        return { path: error.path[0], message: error.message };
+      }),
+    });
+    return;
+  }
+
+  const limit = input.data.limit ?? 10;
+  const offset = input.data.offset ?? 0;
+
+  try {
+    const userOrders = await cartService.getOrdersByUserId({
+      userId: currentUser.userId,
+      fulfillmentStatus: input.data.status,
+      limit,
+      offset,
+    });
+    if (!userOrders || userOrders.length === 0) {
+      res.status(404).json({
+        message: "Orders not found",
+        status: "error",
+        statusCode: 404,
+        details: "You don't have any orders",
+      });
+      return;
+    }
+    const totalOrders = await cartService.getTotalOrdersCountByUserId(
+      currentUser.userId,
+      input.data.status,
+    );
+    res.status(200).json({
+      status: "success",
+      statusCode: 200,
+      message: "Orders retrieved successfully",
+      meta: {
+        has_next_page: userOrders.length > limit,
+        has_previous_page: offset > 0,
+        total: totalOrders[0].count,
+        count:
+          userOrders.length > limit ? userOrders.length - 1 : userOrders.length,
+        current_page: Math.floor(offset / limit) + 1,
+        per_page: limit,
+        last_page: Math.ceil(Number(totalOrders[0].count) / limit),
+      },
+      data: userOrders.length > limit ? userOrders.shift() : userOrders,
     });
   } catch (error) {
     res.status(500).json({

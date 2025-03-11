@@ -208,3 +208,49 @@ export async function updateCartStatus({
   if (!updatedCart.length) throw new Error("Cart not updated");
   return updatedCart[0];
 }
+
+export async function getOrdersByUserId(
+  input: {
+    userId: string;
+    fulfillmentStatus: NonNullable<FulfillmentStatus>;
+  } & Required<PaginationInputSchema>,
+) {
+  let orders = undefined;
+  try {
+    orders = await db
+      .select()
+      .from(order)
+      .where(
+        and(
+          eq(order.userId, input.userId),
+          eq(order.fulfillmentStatus, input.fulfillmentStatus),
+        ),
+      )
+      .limit(input.limit)
+      .offset(input.offset);
+  } catch (error) {
+    throw new Error("Database error");
+  }
+  return orders;
+}
+
+export async function getTotalOrdersCountByUserId(
+  userId: string,
+  fulfillmentStatus: NonNullable<FulfillmentStatus>,
+) {
+  let totalOrdersCount = undefined;
+  try {
+    totalOrdersCount = await db
+      .select({ count: count() })
+      .from(order)
+      .where(
+        and(
+          eq(order.userId, userId),
+          eq(order.fulfillmentStatus, fulfillmentStatus),
+        ),
+      );
+  } catch (error) {
+    throw new Error("Database error");
+  }
+  return totalOrdersCount;
+}
