@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import * as cartService from "../services/cartService";
 import {
   type CartItemInputSchema,
+  itemIdSchema,
   paginationInputSchema,
 } from "../types/inputSchemas";
 import * as productService from "../services/productService";
@@ -170,6 +171,60 @@ export async function addItemToCart(req: Request, res: Response) {
       statusCode: 201,
       message: "Cart item added successfully",
       data: createdCartItem,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error, please try again later",
+      status: "error",
+      statusCode: 500,
+      details: "Something went wrong",
+    });
+  }
+}
+
+export async function deleteCartItem(req: Request, res: Response) {
+  const input = itemIdSchema.safeParse(req.params);
+  if (!input.success) {
+    const errors = input.error.errors;
+    res.status(400).json({
+      status: "error",
+      statusCode: 400,
+      message: "Validation failed",
+      errors: errors.map((error) => {
+        return { path: error.path[0], message: error.message };
+      }),
+    });
+    return;
+  }
+  try {
+    const userCart = await cartService.getCartByUserId(req.user.userId);
+    if (!userCart) {
+      res.status(404).json({
+        message: "Cart not found",
+        status: "error",
+        statusCode: 404,
+        details: "You don't have a cart",
+      });
+      return;
+    }
+    const deletedItem = await cartService.deleteCartItem({
+      cartId: userCart.id,
+      itemId: input.data.id,
+    });
+    if (!deletedItem) {
+      res.status(404).json({
+        message: "Cart item not found",
+        status: "error",
+        statusCode: 404,
+        details: "The cart item you are trying to delete does not exist",
+      });
+      return;
+    }
+    res.status(200).json({
+      status: "success",
+      statusCode: 200,
+      message: "Cart item deleted successfully",
+      data: deletedItem,
     });
   } catch (error) {
     res.status(500).json({

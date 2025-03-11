@@ -35,3 +35,10 @@ export const cartItemInputSchema = z.object({
 });
 
 export type CartItemInputSchema = z.infer<typeof cartItemInputSchema>;
+
+export const itemIdSchema = z.object({
+  id: z
+    .string()
+    .optional()
+    .transform((value) => (value ? parseInt(value) : 0)),
+});

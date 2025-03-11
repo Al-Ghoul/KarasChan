@@ -80,3 +80,22 @@ export async function addItemToCart(input: {
   if (!createdCartItem.length) throw new Error("Cart item not created");
   return createdCartItem[0];
 }
+
+export async function deleteCartItem({
+  cartId,
+  itemId,
+}: {
+  cartId: number;
+  itemId: number;
+}) {
+  let deletedCartItem = undefined;
+  try {
+    deletedCartItem = await db
+      .delete(cartItem)
+      .where(and(eq(cartItem.id, itemId), eq(cartItem.cartId, cartId)))
+      .returning();
+  } catch (error) {
+    throw new Error("Database error");
+  }
+  return deletedCartItem[0];
+}
