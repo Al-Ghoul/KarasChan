@@ -20,7 +20,7 @@ export const cartStatus = pgEnum("cart_status", [
 export const cart = pgTable("cart", {
   id: serial().primaryKey(),
   userId: uuid().references(() => user.id),
-  status: cartStatus(),
+  status: cartStatus().default("active"),
   checkedOutAt: timestamp(),
   archivedAt: timestamp(),
   ...timestamps,
