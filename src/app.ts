@@ -8,6 +8,7 @@ import swaggerJSDoc from "swagger-jsdoc";
 import { SwaggerTheme, SwaggerThemeNameEnum } from "swagger-themes";
 import swaggerUi from "swagger-ui-express";
 import path from "path";
+import { env } from "process";
 
 const swaggerOptions = {
   definition: {
@@ -18,7 +19,7 @@ const swaggerOptions = {
       description: "Express API with Swagger integration",
     },
   },
-  apis: [path.resolve(__dirname, "./routes/*.ts")],
+  apis: [path.resolve(__dirname, env.NODE_ENV === "development" ? "./routes/*.ts" : "./routes/*.js")],
 };
 
 const swaggerDocs = swaggerJSDoc(swaggerOptions);
@@ -27,7 +28,9 @@ export const app = express();
 
 const theme = new SwaggerTheme();
 const options = {
-  customCss: theme.getBuffer(SwaggerThemeNameEnum.DARK),
+  customCss:
+    theme.getBuffer(SwaggerThemeNameEnum.DARK) +
+    ".swagger-ui .topbar { display: none }",
   explorer: false,
 };
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs, options));
