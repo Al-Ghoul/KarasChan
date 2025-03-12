@@ -193,7 +193,7 @@ export async function updateCartStatus({
   status,
 }: {
   cartId: number;
-  status: "active" | "archived";
+  status: NonNullable<CartStatus>;
 }) {
   let updatedCart = undefined;
   try {
