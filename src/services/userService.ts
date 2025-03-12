@@ -1,10 +1,10 @@
 import { NeonDbError } from "@neondatabase/serverless";
 import { db } from "../db";
 import { user } from "../db/schemas/user";
-import { LoginInputSchema, UserInputSchema } from "../types/inputSchemas";
+import { SigninInputSchema, SignupInputSchema } from "../types/inputSchemas";
 import { eq } from "drizzle-orm";
 
-export async function createUser(input: UserInputSchema) {
+export async function createUser(input: SignupInputSchema) {
   let createdUser = undefined;
   try {
     createdUser = await db.insert(user).values(input).returning({
@@ -24,7 +24,7 @@ export async function createUser(input: UserInputSchema) {
   return createdUser[0];
 }
 
-export async function findUserByEmail(input: LoginInputSchema) {
+export async function findUserByEmail(input: SigninInputSchema) {
   let queriedUser: User[] = [];
   try {
     queriedUser = await db

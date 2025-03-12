@@ -1,19 +1,19 @@
 import { Request, Response } from "express";
-import { LoginInputSchema, UserInputSchema } from "../types/inputSchemas";
+import { SigninInputSchema, SignupInputSchema } from "../types/inputSchemas";
 import * as userService from "../services/userService";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { env } from "../env";
 
 export async function createUser(req: Request, res: Response) {
-  const input = req.body as UserInputSchema;
+  const input = req.body as SignupInputSchema;
   try {
     const password = await bcrypt.hash(input.password, 10);
     const createdUser = await userService.createUser({ ...input, password });
     res.status(201).json({
       status: "success",
       statusCode: 201,
-      message: "User created successfully",
+      message: "User signed up successfully",
       data: createdUser,
     });
   } catch (error) {
@@ -37,8 +37,8 @@ export async function createUser(req: Request, res: Response) {
   }
 }
 
-export async function loginUser(req: Request, res: Response) {
-  const input = req.body as LoginInputSchema;
+export async function signinUser(req: Request, res: Response) {
+  const input = req.body as SigninInputSchema;
   try {
     const user = await userService.findUserByEmail(input);
     const passwordMatch = await bcrypt.compare(input.password, user.password);
@@ -64,7 +64,7 @@ export async function loginUser(req: Request, res: Response) {
         accessToken,
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
-      message: "Logged in successfully",
+      message: "Signed in successfully",
     });
   } catch (error) {
     if (error instanceof Error) {

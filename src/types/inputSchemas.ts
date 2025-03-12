@@ -1,19 +1,19 @@
 import { z } from "zod";
 import { fulfillmentStatus } from "../db/schemas/order";
 
-export const loginInputSchema = z.object({
+export const signinInputSchema = z.object({
   email: z.string().email(),
   password: z.string(),
 });
 
-export type LoginInputSchema = z.infer<typeof loginInputSchema>;
+export type SigninInputSchema = z.infer<typeof signinInputSchema>;
 
-export const userInputSchema = loginInputSchema.extend({
+export const signupInputSchema = signinInputSchema.extend({
   fullName: z.string(),
   address: z.string().optional(),
 });
 
-export type UserInputSchema = z.infer<typeof userInputSchema>;
+export type SignupInputSchema = z.infer<typeof signupInputSchema>;
 
 export const paginationInputSchema = z
   .object({
