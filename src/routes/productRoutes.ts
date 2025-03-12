@@ -1,10 +1,7 @@
 import { Router } from "express";
-import { schemaValidatorMiddleware } from "../middlewares/schemaValidatorMiddleware";
-import { paginationInputSchema } from "../types/inputSchemas";
 import * as productController from "../controllers/productController";
 
 const router = Router();
-
 
 /**
  * @swagger
@@ -41,7 +38,7 @@ const router = Router();
  *                         $ref: '#/components/schemas/Product'
  *                     meta:
  *                      $ref: '#/components/schemas/PaginationResponse'
- *       400: 
+ *       400:
  *         description: Bad request
  *         content:
  *           application/json:
@@ -54,10 +51,6 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/GenericResponse'
  */
-router.get(
-  "/",
-  schemaValidatorMiddleware(paginationInputSchema),
-  productController.getProducts,
-);
+router.get("/", productController.getProducts);
 
 export default router;
