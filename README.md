@@ -2,6 +2,11 @@
 
 Karaschan API's a RESTful API for an E-Commerce platform.
 
+For the DB ERD see [src/db/README.md](src/db/README.md)
+
+The ERD is written in [Mermaid](https://mermaid.js.org/syntax/entityRelationshipDiagram.html)
+
+
 ## Routes
 
 | URI                         |                     Description                     | Method |
